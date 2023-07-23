@@ -7,6 +7,7 @@ This repo is for our paper "Revisiting Text-to-AMR Parsing in the Era of LLMs" (
   - Generate AMR by a BART-based parser: `amr_.py`
   - Generate AMR by OpenAI's API for GPT models: `gpt_amr.py`
   - Generate AMR by the elit package: `python elit_amr.py`
+  - Merge all the generated AMRs by various parsers: `merge_parsed.py`
   - Evaluate the generated AMRs by SMATCH: `amr_scorer.py`
 - `data/`:
   - Please download the data files from the [Google Drive folder](https://drive.google.com/drive/folders/1QxyJKi_OPM0HBFD59WaUxaVnmPA21jS_?usp=drive_link) (~200M)
@@ -30,7 +31,8 @@ pip install -r requirements.txt
 **Example Usage:** 
 
 ```bash
-python amr_.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/AMR3-structbart-L_ldc.csv --model AMR3-structbart-L
+python code/amr_.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/AMR3-structbart-L_ldc.
+csv --model AMR3-structbart-L
 ```
 
 ### Parser 2: GPT-3.5-turbo-0613/GPT-4-0613
@@ -41,7 +43,8 @@ python amr_.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/
 
 ```bash
 export OPENAI_API_KEY="$YourOpenaiKey" # Copy and paste your openai key here.
-python gpt_amr.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/elit_ldc.csv --model_version gpt-4-0613
+python code/gpt_amr.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/elit_ldc.csv 
+--model_version gpt-4-0613
 ```
 
 ### Parser 3: ELIT Package
@@ -51,18 +54,25 @@ python gpt_amr.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./da
 **Example Usage:** 
 
 ```bash
-python elit_amr.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/elit_ldc.csv
+python code/elit_amr.py --input_file ./data/ldc_gold_amrs_clean.csv --output_file ./data/parsed_amrs/elit_ldc.csv
 ```
 
 
 
 
 ## Step 3. AMR Scorer
+### Output File Preparation:
+
+Merge all the generated AMRs by various parsers: `python merge_parsed.py`
+
+Then, you will get the file `data/parsed_amrs/all_amrs.csv` (which can also be downloaded from this [Google Drive folder](https://drive.google.com/drive/folders/1QxyJKi_OPM0HBFD59WaUxaVnmPA21jS_?usp=drive_link)).
+
 ### Scorer 1) Get the overall SMATCH score
+
 We use the `smatch` pip package, and calculate the overall SMATCH score as follows:
 
 ```bash
-python amr_scorer.py --input_file ./data/all_amrs.csv --parser elit --smatch_only
+python code/amr_scorer.py --input_file ./data/all_amrs.csv --parser elit --smatch_only
 ```
 
 Note 1: The original SMATCH calculation has an ongoing issue of outputting F1_score greater than 1 (also reported in its github issues). Therefore, we set SMATCH score for each AMR pair to be ```min(original SMATCH, 1)```. 
@@ -76,7 +86,7 @@ Note 2: For invalid AMR predictions such as those with a missing parentheses or 
 **Example Usage:** 
 
 ```bash
-python amr_scorer.py --input_file ./data/all_amrs.csv --parser elit
+python code/amr_scorer.py --input_file ./data/all_amrs.csv --parser elit
 ```
 
 You can change `--parser elit` to other parser names to get the scores for other parsers.
